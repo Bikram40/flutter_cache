@@ -21,11 +21,14 @@ class FutureRequests {
   getFuture(String key, Function function) async {
     if (checkAlreadyRequested(key)) {
       print('flutter_cache : GETTING FROM FUTURE LIST :: $key');
-      return await futureRequests[key]!;
     } else {
       print('flutter_cache : ADDING TO FUTURE LIST :: $key');
       addFutureRequests(key, function());
+    }
+    try {
       return await futureRequests[key]!;
+    } catch (e) {
+      return '';
     }
   }
 
