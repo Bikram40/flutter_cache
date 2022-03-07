@@ -100,6 +100,7 @@ void clear() async {
 *
 * @return void
 */
+
 Future<void> destroy(String key) async {
   FutureRequests.get.removeFuture(key);
   SharedPreferences prefs = await SharedPreferences.getInstance();
