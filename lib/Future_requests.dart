@@ -28,12 +28,17 @@ class FutureRequests {
     try {
       return await futureRequests[key]!;
     } catch (e) {
-      return '';
+      return null;
     }
   }
 
   removeFuture(String key) {
     futureRequests.remove(key);
+    print('flutter_cache : REMOVING FROM FUTURE LIST :: $key');
+  }
+
+  removeAll() {
+    futureRequests.clear();
   }
 
   addFutureRequests(String key, Future<dynamic> future) {

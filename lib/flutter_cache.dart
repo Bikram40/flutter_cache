@@ -19,7 +19,11 @@ Future remember(String key, var data, [int? expiredAt]) async {
       data = await FutureRequests.get.getFuture(key, data);
       // data = await data;
     }
-    return write(key, data, expiredAt);
+    if (data != null) {
+      return write(key, data, expiredAt);
+    } else {
+      return data;
+    }
   }
   return load(key);
 }
@@ -30,11 +34,12 @@ Future remember(String key, var data, [int? expiredAt]) async {
 * @return Cache.content
 */
 Future write(String key, var data, [int? expiredAfter]) async {
+  // if (data != null) {
   Cache cache = new Cache(key, data);
   if (expiredAfter != null) cache.setExpiredAfter(expiredAfter);
 
   cache.save(cache);
-
+  // }
   return load(key);
 }
 
@@ -86,6 +91,7 @@ Future load(String key, [var defaultValue = null, bool list = false]) async {
 */
 void clear() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  FutureRequests.get.removeAll();
   prefs.clear();
 }
 
@@ -94,11 +100,11 @@ void clear() async {
 *
 * @return void
 */
-void destroy(String key) async {
+Future<void> destroy(String key) async {
+  FutureRequests.get.removeFuture(key);
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getString(key) != null) {
     Map keys = jsonDecode(prefs.getString(key)!);
-    // remove all cache trace
     prefs.remove(key);
     prefs.remove(keys['content']);
     prefs.remove(keys['type']);
