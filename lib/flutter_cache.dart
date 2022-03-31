@@ -15,11 +15,9 @@ import 'Future_requests.dart';
 */
 Future remember(String key, var data, [int? expiredAt]) async {
   if (await load(key) == null) {
-    if (data is Function) {
-      data = await FutureRequests.get.getFuture(key, data);
-      // data = await data;
-    }
+    data = await FutureRequests.get.getFuture(key, data);
     if (data != null) {
+      FutureRequests.get.removeFuture(key);
       return write(key, data, expiredAt);
     } else {
       return data;
@@ -37,7 +35,6 @@ Future write(String key, var data, [int? expiredAfter]) async {
   // if (data != null) {
   Cache cache = new Cache(key, data);
   if (expiredAfter != null) cache.setExpiredAfter(expiredAfter);
-
   cache.save(cache);
   // }
   return load(key);
@@ -55,7 +52,7 @@ Future load(String key, [var defaultValue, bool list = false]) async {
   if (prefs.getString(key) == null) return defaultValue;
 
   if (Cache.isExpired(prefs.getInt(key + 'ExpiredAt'))) {
-    destroy(key);
+    destroy(key, withFuture: false);
     return null;
   }
 
@@ -101,8 +98,11 @@ void clear() async {
 * @return void
 */
 
-Future<void> destroy(String key) async {
-  FutureRequests.get.removeFuture(key);
+Future<void> destroy(String key, {bool withFuture = true}) async {
+  if (withFuture) {
+    print('asfasd');
+    FutureRequests.get.removeFuture(key);
+  }
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getString(key) != null) {
     Map keys = jsonDecode(prefs.getString(key)!);
