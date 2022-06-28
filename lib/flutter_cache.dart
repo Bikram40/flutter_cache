@@ -100,7 +100,6 @@ void clear() async {
 
 Future<void> destroy(String key, {bool withFuture = true}) async {
   if (withFuture) {
-    print('asfasd');
     FutureRequests.get.removeFuture(key);
   }
   SharedPreferences prefs = await SharedPreferences.getInstance();
