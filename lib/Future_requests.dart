@@ -18,11 +18,11 @@ class FutureRequests {
     return futureRequests.containsKey(key);
   }
 
-  getFuture(String key, Function function) async {
+  getFuture(String key, Function function, {bool isDebug = false}) async {
     if (checkAlreadyRequested(key)) {
-      print('flutter_cache : GETTING FROM FUTURE LIST :: $key');
+      if (isDebug) print('flutter_cache : GETTING FROM FUTURE LIST :: $key');
     } else {
-      print('flutter_cache : ADDING TO FUTURE LIST :: $key');
+      if (isDebug) print('flutter_cache : ADDING TO FUTURE LIST :: $key');
       addFutureRequests(key, function());
     }
     try {
@@ -32,9 +32,9 @@ class FutureRequests {
     }
   }
 
-  removeFuture(String key) {
+  removeFuture(String key, {bool isDebug = false}) {
     futureRequests.remove(key);
-    print('flutter_cache : REMOVING FROM FUTURE LIST :: $key');
+    if (isDebug) print('flutter_cache : REMOVING FROM FUTURE LIST :: $key');
   }
 
   removeAll() {

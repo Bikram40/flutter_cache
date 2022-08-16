@@ -13,11 +13,11 @@ import 'Future_requests.dart';
 * 
 * @return Cache.content
 */
-Future remember(String key, var data, [int? expiredAt]) async {
+Future remember(String key, var data, int? expiredAt,{bool isDebug=false}) async {
   if (await load(key) == null) {
-    data = await FutureRequests.get.getFuture(key, data);
+    data = await FutureRequests.get.getFuture(key, data,isDebug: isDebug);
     if (data != null) {
-      FutureRequests.get.removeFuture(key);
+      FutureRequests.get.removeFuture(key,isDebug: isDebug);
       return write(key, data, expiredAt);
     } else {
       return data;
