@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_cache/Parse.dart';
+import 'package:get_storage/get_storage.dart';
 
 class Cache {
   late String key;
@@ -58,22 +58,22 @@ class Cache {
   * @return void
   */
   void save(Cache cache) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    GetStorage getStorage =GetStorage('cache');
 
     // set Original Cache key to cache content's key and cache type's key
-    prefs.setString(cache.key,
+    getStorage.write(cache.key,
         jsonEncode({'content': cache.contentKey, 'type': cache.typeKey}));
 
     if (cache.content is String)
-      prefs.setString(cache.contentKey!, cache.content);
+      getStorage.write(cache.contentKey!, cache.content);
 
     if (cache.content is List)
-      prefs.setStringList(cache.contentKey!, cache.content);
+      getStorage.write(cache.contentKey!, cache.content);
 
     if (cache.expiredAfter != null)
-      prefs.setInt(key + 'ExpiredAt', cache.expiredAfter!);
+      getStorage.write(key + 'ExpiredAt', cache.expiredAfter!);
 
-    prefs.setString(cache.typeKey!, cache.type!);
+    getStorage.write(cache.typeKey!, cache.type!);
   }
 
   /*

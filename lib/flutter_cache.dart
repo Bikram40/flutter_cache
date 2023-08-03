@@ -3,7 +3,7 @@ library flutter_cache;
 import 'dart:convert';
 
 import 'package:flutter_cache/Cache.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'Future_requests.dart';
 
@@ -13,11 +13,12 @@ import 'Future_requests.dart';
 * 
 * @return Cache.content
 */
-Future remember(String key, var data, int? expiredAt,{bool isDebug=false}) async {
+Future remember(String key, var data, int? expiredAt,
+    {bool isDebug = false}) async {
   if (await load(key) == null) {
-    data = await FutureRequests.get.getFuture(key, data,isDebug: isDebug);
+    data = await FutureRequests.get.getFuture(key, data, isDebug: isDebug);
     if (data != null) {
-      FutureRequests.get.removeFuture(key,isDebug: isDebug);
+      FutureRequests.get.removeFuture(key, isDebug: isDebug);
       return write(key, data, expiredAt);
     } else {
       return data;
@@ -46,34 +47,31 @@ Future write(String key, var data, [int? expiredAfter]) async {
 * @return Cache.content
 */
 Future load(String key, [var defaultValue, bool list = false]) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  GetStorage prefs = GetStorage('cache');
 
   // Guard
-  if (prefs.getString(key) == null) return defaultValue;
+  if (prefs.read(key) == null) return defaultValue;
 
-  if (Cache.isExpired(prefs.getInt(key + 'ExpiredAt'))) {
+  if (Cache.isExpired(prefs.read(key + 'ExpiredAt'))) {
     destroy(key, withFuture: false);
     return null;
   }
 
-  Map keys = jsonDecode(prefs.getString(key)!);
+  Map keys = jsonDecode(prefs.read(key)!);
   Cache cache = new Cache.rebuild(key);
-  String? cacheType = prefs.getString(keys['type']);
+  String? cacheType = prefs.read(keys['type']);
   var cacheContent;
 
-  if (cacheType == 'String') cacheContent = prefs.getString(keys['content']);
+  if (cacheType == 'String') cacheContent = prefs.read(keys['content']);
 
   if (cacheType == 'Map')
-    cacheContent = jsonDecode(prefs.getString(keys['content'])!);
+    cacheContent = jsonDecode(prefs.read(keys['content'])!);
 
-  if (cacheType == 'List<String>')
-    cacheContent = prefs.getStringList(keys['content']);
+  if (cacheType == 'List<String>') cacheContent = prefs.read(keys['content']);
 
   if (cacheType == 'List<Map>')
-    cacheContent = prefs
-        .getStringList(keys['content'])!
-        .map((i) => jsonDecode(i))
-        .toList();
+    cacheContent =
+        prefs.read(keys['content'])!.map((i) => jsonDecode(i)).toList();
 
   cache.setContent(cacheContent, keys['content']);
   cache.setType(cacheType, keys['type']);
@@ -87,9 +85,9 @@ Future load(String key, [var defaultValue, bool list = false]) async {
 * @return void
 */
 void clear() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  GetStorage getStorage = GetStorage('cache');
   FutureRequests.get.removeAll();
-  prefs.clear();
+  getStorage.erase();
 }
 
 /*
@@ -102,9 +100,9 @@ Future<void> destroy(String key, {bool withFuture = true}) async {
   if (withFuture) {
     FutureRequests.get.removeFuture(key);
   }
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (prefs.getString(key) != null) {
-    Map keys = jsonDecode(prefs.getString(key)!);
+  GetStorage prefs = GetStorage('cache');
+  if (prefs.read(key) != null) {
+    Map keys = jsonDecode(prefs.read(key)!);
     prefs.remove(key);
     prefs.remove(keys['content']);
     prefs.remove(keys['type']);
